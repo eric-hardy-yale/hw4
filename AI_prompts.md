@@ -137,3 +137,18 @@ One section per problem: the prompt I typed, plus a follow-up if the first attem
 - **Checked:** in the browser on desktop and on a 375 px phone screen. `output/design.md` explains each change.
 
 **Follow-up:** None needed.
+
+## Problem 10: App check, audit trail, safety, and finishing the harness
+
+**Prompt:**
+> Test the live site and document it in output/app_check.html (a page you can double-click open). Include clear screenshots and short captions for: Chat checking the inventory level of an item (honest stock/price from the DB) The dynamic search-result cards appearing after a category question (e.g. hoodies) One of the usability features you added Make the HTML easy to grade: heading for each check, screenshot, one or two sentences on what the screenshot proves. Put the screenshot image files in output/app_check_images/ and link them from app_check.html with relative paths (for example app_check_images/inventory.png).
+
+> Keep an append-only output/audit_trail.json of agent-loop activity (time, tool name, short args/result, stop reason). Do not wipe it between runs. Also, think of some safety rules to give the agent and put them in prompts/prompt.md.
+
+> Finish output/harness.md so it is clear how the system works. Model fields in models.py and why you chose them Tools and abilities Safety rules Specs (loop limits, result caps, models, how to run front + back)
+
+**Result:**
+- **Audit trail:** every agent run is appended to `output/audit_trail.json` (time, message, tool calls with short args and results, reply, stop reason, price retries, duration). It is never wiped, and failed runs now log their tool calls too.
+- **Loop limits:** 8 model requests and 10 tool calls per message.
+- **Safety rules:** `prompts/prompt.md` now has a full Safety rules section (honesty, what the agent can't do, privacy, prompt injection, tone and scope, and the code guardrails).
+- **Harness:** `output/harness.md` now has a one-minute overview, a models table, a tools and abilities table, a safety section, and specs.

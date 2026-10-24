@@ -21,7 +21,7 @@ ROOT = HERE.parent
 # Load the key before tools.py builds the model.
 load_dotenv(ROOT / ".env")
 
-from pydantic_ai import Agent, ModelRetry, RunContext  # noqa: E402
+from pydantic_ai import Agent, ModelRetry, RunContext, capture_run_messages  # noqa: E402
 from pydantic_ai.messages import (  # noqa: E402
     ModelMessage,
     ModelRequest,
@@ -33,6 +33,7 @@ from pydantic_ai.messages import (  # noqa: E402
     UserPromptPart,
 )
 from pydantic_ai.models.openai import OpenAIResponsesModelSettings  # noqa: E402
+from pydantic_ai.usage import UsageLimits  # noqa: E402
 
 from models import AuditEntry, ChatResponse, ChatTurn, PageContext, ShopDeps, Shopper, ShopReply, ToolStep  # noqa: E402
 from tools import (  # noqa: E402
@@ -51,6 +52,9 @@ PROMPT_PATH = HERE / "prompts" / "prompt.md"
 AUDIT_PATH = ROOT / "output" / "audit_trail.json"
 MODEL_NAME = os.getenv("OPENAI_MODEL") or DEFAULT_MODEL
 MAX_CARDS = 12
+# Loop limits: at most 8 model calls and 10 tool calls per shopper message, so a confused
+# model can't spin forever or run up cost. Hitting a limit ends the run with a friendly apology.
+LOOP_LIMITS = UsageLimits(request_limit=8, tool_calls_limit=10)
 _audit_lock = threading.Lock()
 
 agent = Agent(
@@ -146,13 +150,20 @@ def run_agent(
     deps.allowed_amounts = dollar_amounts(message) | {a for t in (history or []) for a in dollar_amounts(t.text)}
     if current:
         deps.seen_product_ids.add(current.product_id)
-    try:
-        result = agent.run_sync(message, deps=deps, message_history=to_history(history or []))
-    except Exception as exc:  # keep the chat alive and still log the failed run
+    with capture_run_messages() as run_messages:
+        try:
+            result = agent.run_sync(
+                message, deps=deps, message_history=to_history(history or []), usage_limits=LOOP_LIMITS
+            )
+            error = None
+        except Exception as exc:  # keep the chat alive and still log the failed run
+            error = exc
+    if error is not None:
+        exc = error
         reply = "Sorry, I hit a snag reaching our shop assistant. Please try again in a moment."
         append_audit(AuditEntry(
-            time=datetime.now(timezone.utc), user_id=user_id, user_message=message, thoughts=[],
-            tool_calls=[], reply=reply, product_ids=[], model=MODEL_NAME,
+            time=datetime.now(timezone.utc), user_id=user_id, user_message=message,
+            thoughts=thoughts(run_messages), tool_calls=tool_steps(run_messages), reply=reply, product_ids=[], model=MODEL_NAME,
             stop_reason=f"error: {type(exc).__name__}: {exc}", price_retries=deps.price_retries,
             duration_seconds=round(time.perf_counter() - started, 2),
         ))
