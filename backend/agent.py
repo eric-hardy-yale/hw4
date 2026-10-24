@@ -160,7 +160,12 @@ def run_agent(
             error = exc
     if error is not None:
         exc = error
-        reply = "Sorry, I hit a snag reaching our shop assistant. Please try again in a moment."
+        if "content management policy" in str(exc) or "content_filter" in str(exc):
+            # The gateway's safety filter refused the message (e.g. a jailbreak attempt).
+            reply = ("I can't help with that, but I'm happy to help you find Yale gear, "
+                     "check sizes and prices, or see what's in stock.")
+        else:
+            reply = "Sorry, I hit a snag reaching our shop assistant. Please try again in a moment."
         append_audit(AuditEntry(
             time=datetime.now(timezone.utc), user_id=user_id, user_message=message,
             thoughts=thoughts(run_messages), tool_calls=tool_steps(run_messages), reply=reply, product_ids=[], model=MODEL_NAME,

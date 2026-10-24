@@ -152,3 +152,7 @@ One section per problem: the prompt I typed, plus a follow-up if the first attem
 - **Loop limits:** 8 model requests and 10 tool calls per message.
 - **Safety rules:** `prompts/prompt.md` now has a full Safety rules section (honesty, what the agent can't do, privacy, prompt injection, tone and scope, and the code guardrails).
 - **Harness:** `output/harness.md` now has a one-minute overview, a models table, a tools and abilities table, a safety section, and specs.
+- **Live app check:** ran with the real model (`gpt-5.6-luna` via Portkey). `output/app_check.html` has four screenshots in `output/app_check_images/`: an inventory check (S = 12, M sold out, $68.00), hoodie cards on the page, a chat card opening the detail page, and the stock badge / size filter / sort feature. A table of other live checks covers "this in pink?", a discount-code-and-other-customer trick, and a prompt-injection attempt. Every number was checked against the database.
+- **Fixes found while testing live:**
+  - Azure's content filter blocked a jailbreak message, and the chat used to show a generic error. It now politely declines.
+  - On a product page, the agent said "I've put them on the page", but the chat cards were hidden there. They now show below the product.

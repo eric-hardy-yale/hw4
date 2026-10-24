@@ -24,6 +24,7 @@ export default function App() {
     <div className="app">
       <NavBar />
       <main className="page">
+        {/* Chat cards sit above the page, or below the product on a single-item page. */}
         {!onDetailPage && <ChatResults />}
         <Routes>
           <Route path="/" element={<Home />} />
@@ -34,6 +35,7 @@ export default function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
+        {onDetailPage && <ChatResults />}
       </main>
       <Footer />
       <ChatWidget />

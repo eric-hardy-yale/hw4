@@ -177,7 +177,7 @@ shopper types in chat widget
 **Why it's built this way:**
 - **The model never writes card data.** It only picks `product_ids`, and the server fills in name, price, image and stock from the database. A hallucinated id is dropped, and a price on a card can't be wrong.
 - **One card component everywhere.** Chat results reuse `ProductCard`, so clicking any card, from Products, from the on-page chat section, or from the mini cards in the widget, opens the same single-item page (large image + full info).
-- **Results persist while you browse.** The section lives in a React context above the router, so a shopper can open a product, press Back, and the chat's cards are still there. It's hidden on the single-item page itself so the detail view stays clean. **Clear** removes it, and a new chat search replaces it.
+- **Results persist while you browse.** The section lives in a React context above the router, so a shopper can open a product, press Back, and the chat's cards are still there. On a single-item page it moves below the product, so the detail view stays on top. **Clear** removes it, and a new chat search replaces it.
 - **Text stays short.** The prompt tells the agent to name 3–5 favorites and say "I've put them on the page" instead of listing every price in the bubble.
 
 Verified in the browser: the chat put 4 hoodie cards at the top of Home. Clicking the Crew Left Chest Hoodie card opened its detail page ($68.00, M sold out). Back returned to Home with the 4 cards still there, and a mini card in the chat panel also opened its detail page.
