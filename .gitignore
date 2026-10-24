@@ -1,0 +1,20 @@
+# Assignment rule: never commit the database or product images
+data/
+*.db
+products/
+
+# Secrets
+.env
+
+# Python
+.venv/
+__pycache__/
+
+# Node
+node_modules/
+dist/
+.DS_Store
+
+# Local secrets / env
+.env.*
+!.env.example
